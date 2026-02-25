@@ -1,4 +1,4 @@
-package com.sprint.mission.discodit.repository.jcf;
+package com.sprint.mission.discodeit.repository.jcf;
 
 public class JCFChannelRepository {
 }

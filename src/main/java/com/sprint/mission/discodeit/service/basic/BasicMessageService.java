@@ -1,4 +1,4 @@
-package com.sprint.mission.discodit.service.basic;
+package com.sprint.mission.discodeit.service.basic;
 
 public class BasicMessageService {
 }

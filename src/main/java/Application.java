@@ -1,6 +1,6 @@
-import com.sprint.mission.discodit.entity.*;
-import com.sprint.mission.discodit.service.*;
-import com.sprint.mission.discodit.service.jcf.*;
+import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.service.*;
+import com.sprint.mission.discodeit.service.jcf.*;
 
 import java.util.UUID;
 
@@ -9,7 +9,7 @@ public class Application {
     public static void main(String[] args) {
 
         // ===== User 엔티티 테스트 =====
-        User user = new User("홍길동", "hong@codeit.com");
+        User user = new User("홍길동", "hong@codeit.com", "hong1234");
 
         System.out.println("User ID: " + user.getId());
         System.out.println("User 이름: " + user.getName());
@@ -23,7 +23,7 @@ public class Application {
                 new Message("안녕하세요!", userId, channelId);
 
         System.out.println("Message ID: " + message.getId());
-        System.out.println("작성자: " + message.getUserId());
+        System.out.println("작성자: " + message.getAuthorId());
         System.out.println("채널: " + message.getChannelId());
         System.out.println("내용: " + message.getContent());
 

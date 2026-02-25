@@ -1,7 +1,7 @@
-package com.sprint.mission.discodit.service.jcf;
+package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodit.entity.User;
-import com.sprint.mission.discodit.service.UserService;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
@@ -14,8 +14,8 @@ public class JCFUserService implements UserService {
 
     // User 생성 Create
     @Override
-    public User createUser(String name, String email) {
-        User user = new User(name, email);
+    public User createUser(String name, String email, String password) {
+        User user = new User(name, email, password);
         userStore.put(user.getId(), user);
         return user;
     }
@@ -34,10 +34,10 @@ public class JCFUserService implements UserService {
 
     //UPDATE
     @Override
-    public void updateUser(UUID id, String name, String email) {
+    public void updateUser(UUID id, String name, String email, String password) {
         User user = userStore.get(id);
         if (user != null) {
-            user.update(name, email); //  User 엔티티에 update 메서드 참조
+            user.update(name, email, password); //  User 엔티티에 update 메서드 참조
         }
     }
     // DELETE

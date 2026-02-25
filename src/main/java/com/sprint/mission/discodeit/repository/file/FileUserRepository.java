@@ -1,4 +1,4 @@
-package com.sprint.mission.discodit.repository.file;
+package com.sprint.mission.discodeit.repository.file;
 
 public class FileUserRepository {
 }

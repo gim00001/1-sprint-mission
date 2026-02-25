@@ -1,7 +1,7 @@
-package com.sprint.mission.discodit.service.jcf;
+package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodit.entity.Message;
-import com.sprint.mission.discodit.service.MessageService;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.*;
 

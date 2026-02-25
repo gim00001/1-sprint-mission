@@ -1,4 +1,4 @@
-package com.sprint.mission.discodit.repository;
+package com.sprint.mission.discodeit.repository;
 
 public class MessageRepository {
 }
