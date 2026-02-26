@@ -1,4 +1,13 @@
 package com.sprint.mission.discodeit.repository;
 
-public class ChannelRepository {
+import com.sprint.mission.discodeit.entity.Channel;
+
+import java.util.*;
+
+public interface ChannelRepository {
+    Channel save(Channel channel);
+    Optional<Channel> findById(UUID id);
+    Optional<Channel> findByName(String name);
+    List<Channel> findAll();
+    void delete(UUID id);
 }
