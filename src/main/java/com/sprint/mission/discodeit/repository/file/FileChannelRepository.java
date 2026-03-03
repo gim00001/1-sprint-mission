@@ -13,11 +13,15 @@ public class FileChannelRepository implements ChannelRepository {
     private Map<UUID, Channel> store = load();
 
     // 파일에서 데이터를 읽어오는 메서드
-    @SuppressWarnings("unChecked")
+    @SuppressWarnings("unchecked")
     private Map<UUID, Channel> load() {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(FILE_PATH))) {
             return (Map<UUID, Channel>) ois.readObject();
+        } catch (FileNotFoundException | EOFException e) {
+            //  파일이 없거나 완전히 비어 있으면 빈 Map 반환
+            return new HashMap<>();
         } catch (Exception e) {
+            e.printStackTrace();
             return new HashMap<>();
         }
     }

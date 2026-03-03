@@ -17,8 +17,11 @@ public class FileUserRepository implements UserRepository {
     private Map<UUID, User> load() {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(FILE_PATH))) {
             return (Map<UUID, User>) ois.readObject();
-        } catch (Exception e) {
+        } catch (FileNotFoundException | EOFException e) {
             return new HashMap<>();
+        } catch (Exception e) {
+            e.printStackTrace(); // 문제 원인 추적을 위해 로그를 남김
+             return new HashMap<>();
         }
     }
 

@@ -16,7 +16,8 @@ public class FileMessageRepository implements MessageRepository {
     private Map<UUID, Message> load() {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(FILE_PATH))) {
             return (Map<UUID, Message>) ois.readObject();
-        } catch (FileNotFoundException e) {
+        } catch (FileNotFoundException  | EOFException e) {
+            // 파일이 없거나 비어 있으면 빈 Map 반환
             return new HashMap<>();
         } catch (Exception e) {
             e.printStackTrace();
