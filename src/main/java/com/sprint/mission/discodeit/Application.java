@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.service.basic.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public class Application {
 
@@ -21,7 +22,12 @@ public class Application {
 
         UserService userService = new BasicUserService(userRepository);
         ChannelService channelService = new BasicChannelService(channelRepository);
-        MessageService messageService = new BasicMessageService(messageRepository);
+
+        MessageService messageService = new BasicMessageService(
+                messageRepository,
+                userRepository,
+                channelRepository
+        );
 
         // ==============================
         // 2. "DB 초기화/ 모든 데이터 삭제"
@@ -34,6 +40,18 @@ public class Application {
         }
         for (Channel c : channelService.findAll()) {
             channelService.delete(c.getId());
+        }
+
+        // * 예외 발생 테스트(존재 하지 않는 User/Channel로 메시지 생성
+        System.out.println("-------------예외 케이스 테스트-------------");
+        try {
+            messageService.create(
+                    "존재하지 않는 데이터로 메시지 생성",
+                    UUID.randomUUID(), // 없는 채널ID
+                    UUID.randomUUID() // 없는 유저ID
+            );
+        } catch (IllegalArgumentException e) {
+            System.out.println("[예외 발생!] " + e.getMessage());
         }
 
         //===============================
