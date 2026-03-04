@@ -102,7 +102,6 @@ public class Application {
         System.out.println("[삭제 후 User] 전체 수: " + userService.findAll().size());
         System.out.println("[삭제 후 Channel] 전체 수: " + ((List<Channel>) channelService.findAll()).size());
         System.out.println("[삭제 후 Message] 전체 수: " + messageService.findAll().size());
-
     }
 
     static User setupUser(UserService userService) {
