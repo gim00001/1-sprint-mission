@@ -1,8 +1,11 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
 import java.util.UUID;
 
+@Getter
 public class Message implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -28,31 +31,5 @@ public class Message implements Serializable {
     public void updateContent(String newContent) {
         this.content = newContent;
         this.updatedAt = System.currentTimeMillis();
-    }
-
-    // Getter 메소드
-    public UUID getId() {
-
-        return id;
-    }
-    public long getCreatedAt() {
-
-        return createdAt;
-    }
-    public long getUpdatedAt() {
-
-        return updatedAt;
-    }
-    public String getContent() {
-
-        return content;
-    }
-    public UUID getAuthorId() {
-
-        return authorId;
-    }
-    public UUID getChannelId() {
-
-        return channelId;
     }
 }
