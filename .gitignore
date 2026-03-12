@@ -39,5 +39,14 @@ bin/
 ### VS Code ###
 .vscode/
 
+<<<<<<< HEAD
 ### Mac OS ###
 .DS_Store
+=======
+###
+*fileHashes*
+*checksums*
+fileHashes
+checksums
+*backup*
+>>>>>>> 5238b2a (refactor: Apply Lombok @Getter and @RequiredArgsConstructor to domain and service)

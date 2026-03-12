@@ -2,11 +2,14 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
+@Repository
 public class FileUserRepository implements UserRepository {
+    private static final long serialVersionUID = 1L;
     private static final String FILE_PATH = "user.db";
 
     // User 데이터를 메모리상에서 관리하는 맵
@@ -21,7 +24,7 @@ public class FileUserRepository implements UserRepository {
             return new HashMap<>();
         } catch (Exception e) {
             e.printStackTrace(); // 문제 원인 추적을 위해 로그를 남김
-             return new HashMap<>();
+            return new HashMap<>();
         }
     }
 
@@ -60,7 +63,7 @@ public class FileUserRepository implements UserRepository {
 
     @Override
     public void delete(UUID id) {
-         store.remove(id);
-         saveToFile();
+        store.remove(id);
+        saveToFile();
     }
 }

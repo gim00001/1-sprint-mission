@@ -2,11 +2,14 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
+@Repository
 public class FileChannelRepository implements ChannelRepository {
+    private static final long serialVersionUID = 1L;
     private static final String FILE_PATH = "channel.db";
 
     //Channel 데이터를 메모리에서 관리하는 맵
@@ -32,15 +35,15 @@ public class FileChannelRepository implements ChannelRepository {
             oos.writeObject(store);
         } catch (IOException e) {
             throw new RuntimeException(e);
-            }
         }
+    }
 
     @Override
     public Channel save(Channel channel) {
-            store.put(channel.getId(), channel);
-            saveToFile();
-            return channel;
-        }
+        store.put(channel.getId(), channel);
+        saveToFile();
+        return channel;
+    }
 
     @Override
     public Optional<Channel> findById(UUID id) {

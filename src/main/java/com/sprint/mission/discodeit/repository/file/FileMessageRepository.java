@@ -2,11 +2,14 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
+@Repository
 public class FileMessageRepository implements MessageRepository {
+    private static final long serialVersionUID = 1L;
     private static final String FILE_PATH = "message.db";
 
     private Map<UUID, Message> store = load();
@@ -16,7 +19,7 @@ public class FileMessageRepository implements MessageRepository {
     private Map<UUID, Message> load() {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(FILE_PATH))) {
             return (Map<UUID, Message>) ois.readObject();
-        } catch (FileNotFoundException  | EOFException e) {
+        } catch (FileNotFoundException | EOFException e) {
             // 파일이 없거나 비어 있으면 빈 Map 반환
             return new HashMap<>();
         } catch (Exception e) {
@@ -77,6 +80,6 @@ public class FileMessageRepository implements MessageRepository {
             }
         }
         return result;
-        }
-
     }
+
+}
