@@ -15,8 +15,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,16 +27,20 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserResponseDto create(UserCreateRequestDto dto) {
+        // user, email 중복체크
         if (userRepository.existsByUsername(dto.getUsername()) ||
                 userRepository.existsByEmail(dto.getEmail())) {
             throw new IllegalArgumentException("username 또는 email이 중복됩니다.");
         }
+        // user 생성 및 저장
         User user = new User(dto.getUsername(), dto.getEmail(), dto.getPassword());
         userRepository.save(user);
 
+        // UserStatus 생성 및 저장 (최초 생성시 온라인 처리)
         UserStatus userStatus = new UserStatus(user.getId(), Instant.now());
         userStatusRepository.save(userStatus);
 
+        // 프로필 이미지 저장(선택)
         if (dto.getProfileImageContent() != null && dto.getProfileImageContentType() != null) {
             BinaryContent profile = new BinaryContent(
                     dto.getProfileImageContent(),
@@ -51,7 +55,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserResponseDto findById(UUID id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException(("해당 유저 없음"));
+        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 유저 없음"));
         UserStatus userStatus = userStatusRepository.findByUserId(id).orElse(null);
         return toResponseDto(user, userStatus);
     }
@@ -61,10 +65,10 @@ public class BasicUserService implements UserService {
         List<User> users = userRepository.findAll();
         return users.stream()
                 .map(user -> {
-            List<UserStatus> statusList =userStatusRepository.findAllByUserId(user.getId());
-            UserStatus userStatus = statusList.isEmpty() ? null : statusList.get(0);
-            return toResponseDto(user, userStatus);
-        })
+                    List<UserStatus> statusList = userStatusRepository.findAllByUserId(user.getId());
+                    UserStatus userStatus = statusList.isEmpty() ? null : statusList.get(0);
+                    return toResponseDto(user, userStatus);
+                })
                 .collect(Collectors.toList());
     }
 
