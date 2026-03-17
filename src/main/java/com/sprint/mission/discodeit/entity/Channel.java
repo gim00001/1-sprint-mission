@@ -16,14 +16,16 @@ public class Channel implements Serializable {
     private Instant updatedAt; //마지막 수정 시각
     private String name; // 채널 이름
     private String description; // 채널 설명
+    private boolean isPrivate; // PUBLIC/PRIVATE 채널 여부
 
     // 생성자: id, createdAt, updatedAt을 생성자 내부에서 초기화, 나머지는 파라미터로 받기
-    public Channel(String name, String description) {
+    public Channel(String name, String description, boolean isPrivate) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = createdAt;
         this.name = name;
         this.description = description;
+        this.isPrivate = isPrivate;
     }
 
     // 외부 데이터(long 타입)에서 값을 받을 때 Instant 변환용 생성자
@@ -44,6 +46,9 @@ public class Channel implements Serializable {
         this.description = description;
     }
 
+    public boolean isPrivate() {
+        return isPrivate;
+    }
 
     // 비즈니스 메서드 예시; 정보 업데이트
     public void update(String name, String description) {

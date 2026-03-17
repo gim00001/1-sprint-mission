@@ -8,6 +8,6 @@ import java.util.UUID;
 
 @Getter
 @NoArgsConstructor
-public class PrivateChannelCreateRequest {
+public class PrivateChannelCreateRequestDto {
     private List<UUID> participantUserIds;
 }

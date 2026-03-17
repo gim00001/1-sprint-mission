@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit;
 
+import com.sprint.mission.discodeit.dto.UserResponseDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
@@ -40,7 +41,7 @@ public class DiscodeitApplication {
         for (Message m : messageService.findAll()) {
             messageService.delete(m.getId());
         }
-        for (User u : userService.findAll()) {
+        for (UserResponseDto u : userService.findAll()) {
             userService.delete(u.getId());
         }
         for (Channel c : channelService.findAll()) {
@@ -75,8 +76,8 @@ public class DiscodeitApplication {
         //4. 상세 조회 - Optional
         //============================
         System.out.println("--------------유저 조회------------");
-        Optional<User> foundUser = userService.findById(user.getId());
-        foundUser.ifPresent(u -> System.out.println("id = " + u.getId() + ", name = " + u.getName()));
+        Optional<UserResponseDto> foundUser = userService.findById(user.getId());
+        foundUser.ifPresent(u -> System.out.println("id = " + u.getId() + ", name = " + u.getUsername()));
 
         System.out.println("--------------채널 조회------------");
         Optional<Channel> foundChannel = channelService.findById(channel.getId());
