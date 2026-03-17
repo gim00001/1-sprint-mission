@@ -1,12 +1,14 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.Message;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.*;
 
 @Repository
+@Primary
 public class MessageRepositoryImpl implements MessageRepository {
     private final Map<UUID, Message> store = new HashMap<>();
 

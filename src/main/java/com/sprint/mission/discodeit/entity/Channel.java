@@ -46,10 +46,6 @@ public class Channel implements Serializable {
         this.description = description;
     }
 
-    public boolean isPrivate() {
-        return isPrivate;
-    }
-
     // 비즈니스 메서드 예시; 정보 업데이트
     public void update(String name, String description) {
         this.name = name;
@@ -58,6 +54,6 @@ public class Channel implements Serializable {
     }
 
     public Channel createChannel(String name) {
-        return new Channel(name, "");
+        return new Channel(name, "", false);
     }
 }

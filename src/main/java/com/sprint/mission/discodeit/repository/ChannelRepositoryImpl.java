@@ -1,11 +1,13 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
 @Repository
+@Primary
 public class ChannelRepositoryImpl implements ChannelRepository {
     private final Map<UUID, Channel> store = new HashMap<>();
 
