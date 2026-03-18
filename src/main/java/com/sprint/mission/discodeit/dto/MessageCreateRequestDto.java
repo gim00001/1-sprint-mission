@@ -10,6 +10,9 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-public class PrivateChannelCreateRequestDto {
-    private List<UUID> participantUserIds;
+public class MessageCreateRequestDto {
+    private UUID channelId;
+    private UUID authorId;
+    private String content;
+    private List<BinaryContentCreateRequestDto> attachments;
 }

@@ -9,34 +9,14 @@ import java.util.*;
 
 @Repository
 public class FileUserRepository implements UserRepository {
-    private static final long serialVersionUID = 1L;
     private static final String FILE_PATH = "user.db";
+    private final Map<UUID, User> store;
 
-    // User 데이터를 메모리상에서 관리하는 맵
-    private Map<UUID, User> store = load();
-
-    // 파일에서 데이터를 불러오는 메서드
-    @SuppressWarnings("unchecked")
-    private Map<UUID, User> load() {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(FILE_PATH))) {
-            return (Map<UUID, User>) ois.readObject();
-        } catch (FileNotFoundException | EOFException e) {
-            return new HashMap<>();
-        } catch (Exception e) {
-            e.printStackTrace(); // 문제 원인 추적을 위해 로그를 남김
-            return new HashMap<>();
-        }
+    public FileUserRepository() {
+        this.store = load();
     }
 
-    // 메모리의 store를 파일로 저장하는 메서드
-    private void saveToFile() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
-            oos.writeObject(store);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
+    // 저장
     @Override
     public User save(User user) {
         store.put(user.getId(), user);
@@ -52,7 +32,14 @@ public class FileUserRepository implements UserRepository {
     @Override
     public Optional<User> findByUsername(String username) {
         return store.values().stream()
-                .filter(user -> user.getName().equals(username))
+                .filter(user -> Objects.equals(user.getUsername(), username))
+                .findFirst();
+    }
+
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return store.values().stream()
+                .filter(user -> Objects.equals(user.getEmail(), email))
                 .findFirst();
     }
 
@@ -62,8 +49,44 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public void delete(UUID id) {
+    public boolean existsByUsername(String username) {
+        return store.values().stream()
+                .anyMatch(user -> Objects.equals(user.getUsername(), username));
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return store.values().stream()
+                .anyMatch(user -> Objects.equals(user.getEmail(), email));
+    }
+
+    @Override
+    public void deleteById(UUID id) {
         store.remove(id);
         saveToFile();
+    }
+
+    // --- 파일 저장/로딩 로직 ---
+
+    @SuppressWarnings("unchecked")
+    private Map<UUID, User> load() {
+        File file = new File(FILE_PATH);
+        if (!file.exists()) {
+            return new HashMap<>();
+        }
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+            return (Map<UUID, User>) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("User DB 파일 로딩 실패: " + e.getMessage());
+            return new HashMap<>();
+        }
+    }
+
+    private void saveToFile() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
+            oos.writeObject(store);
+        } catch (IOException e) {
+            throw new RuntimeException("User DB 파일 저장 오류: " + e.getMessage(), e);
+        }
     }
 }

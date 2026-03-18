@@ -13,6 +13,6 @@ import java.util.UUID;
 public class UserStatusResponseDto {
     private UUID id;
     private UUID userId;
-    private boolean online;
     private Instant lastAccessAt;
+    private boolean online;
 }

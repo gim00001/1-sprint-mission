@@ -4,14 +4,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class BinaryContentCreateRequestDto {
-    private byte[] content;
-    private String contentType;
-    private UUID userId;
-    private UUID messageId;
+public class MessageUpdateRequestDto {
+    private UUID id;
+    private String content;
+    private List<BinaryContentCreateRequestDto> attachments;
 }

@@ -1,128 +1,91 @@
 package com.sprint.mission.discodeit;
 
-import com.sprint.mission.discodeit.dto.UserResponseDto;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.dto.*;
+import com.sprint.mission.discodeit.service.*;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @SpringBootApplication
 public class DiscodeitApplication {
-
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(DiscodeitApplication.class, args);
 
         // ==============================
-        // 1. Repository, Service 준비 (모두 getBean으로)
+        // 1. 서비스/리포지토리 가져오기
         // ==============================
-        UserRepository userRepository = context.getBean(UserRepository.class);
-        ChannelRepository channelRepository = context.getBean(ChannelRepository.class);
-        MessageRepository messageRepository = context.getBean(MessageRepository.class);
-
         UserService userService = context.getBean(UserService.class);
         ChannelService channelService = context.getBean(ChannelService.class);
         MessageService messageService = context.getBean(MessageService.class);
+        ReadStatusService readStatusService = context.getBean(ReadStatusService.class);
+        UserStatusService userStatusService = context.getBean(UserStatusService.class);
+        BinaryContentService binaryContentService = context.getBean(BinaryContentService.class);
 
         // ==============================
-        // 2. "DB 초기화/ 모든 데이터 삭제"
-        //===============================
-        for (Message m : messageService.findAll()) {
-            messageService.delete(m.getId());
+        // 2. "모든 데이터 삭제" (테스트 전 초기화)
+        // ==============================
+        // 유저, 채널, 메시지 등 구체 서비스에 findAll(), delete() 등 호출해서 각 데이터 전체 삭제하세요.
+        // 예: findAll/getAll 등 기능 이름에 따라 맞게 어댑트
+        for (UserResponseDto user : userService.findAll()) {
+            userService.delete(user.getId());
         }
-        for (UserResponseDto u : userService.findAll()) {
-            userService.delete(u.getId());
-        }
-        for (Channel c : channelService.findAll()) {
-            channelService.delete(c.getId());
-        }
-
-        // * 예외 발생 테스트(존재 하지 않는 User/Channel로 메시지 생성
-        System.out.println("-------------예외 케이스 테스트-------------");
-        try {
-            messageService.create(
-                    "존재하지 않는 데이터로 메시지 생성",
-                    UUID.randomUUID(), // 없는 채널ID
-                    UUID.randomUUID() // 없는 유저ID
-            );
-        } catch (IllegalArgumentException e) {
-            System.out.println("[예외 발생!] " + e.getMessage());
+        for (ChannelResponseDto channel : channelService.findAllByUserId(null)) { // 모든 채널 반환하도록 구현 필요
+            channelService.delete(channel.getId());
         }
 
-        //===============================
-        // 3.테스트 데이터 생성 및 출력
-        //===============================
-        User user = setupUser(userService);
-        System.out.println("[User] 생성: " + user.getId());
+        // ==============================
+        // 3. 테스트용 데이터 생성
+        // ==============================
 
-        Channel channel = setupChannel(channelService);
-        System.out.println("[Channel] 생성: " + channel.getId());
+        // 3-1. User 생성
+        UserCreateRequestDto userDto = new UserCreateRequestDto();
+        userDto.setUsername("testuser");
+        userDto.setEmail("test@email.com");
+        userDto.setPassword("secret");
+        UserResponseDto savedUser = userService.create(userDto);
+        System.out.println("유저 등록 결과: " + savedUser.getUsername() + " (ID: " + savedUser.getId() + ")");
 
-        Message message = setupMessage(messageService, channel, user);
-        System.out.println("[Message] 생성: " + message.getId());
+        // 3-2. 채널(PUBLIC) 생성
+        PublicChannelCreateRequestDto pubChDto = new PublicChannelCreateRequestDto();
+        pubChDto.setName("public-ch");
+        pubChDto.setDescription("공개 채널");
+        ChannelResponseDto savedPubCh = channelService.createPublic(pubChDto);
+        System.out.println("채널 등록 결과: " + savedPubCh.getName());
 
-        //============================
-        //4. 상세 조회 - Optional
-        //============================
-        System.out.println("--------------유저 조회------------");
-        Optional<UserResponseDto> foundUser = userService.findById(user.getId());
-        foundUser.ifPresent(u -> System.out.println("id = " + u.getId() + ", name = " + u.getUsername()));
+        // 3-3. 메시지 + 첨부파일 생성
+        MessageCreateRequestDto msgCreateDto = new MessageCreateRequestDto();
+        msgCreateDto.setChannelId(savedPubCh.getId());
+        msgCreateDto.setAuthorId(savedUser.getId());
+        msgCreateDto.setContent("첫번째 메시지! 헬로월드");
+        // 첨부파일 (예시)
+        BinaryContentCreateRequestDto attachDto = new BinaryContentCreateRequestDto();
+        attachDto.setContent("HelloFile".getBytes());
+        attachDto.setContentType("text/plain");
+        msgCreateDto.setAttachments(List.of(attachDto));
+        MessageResponseDto savedMsg = messageService.create(msgCreateDto);
+        System.out.println("메시지 등록 결과: " + savedMsg.getId());
 
-        System.out.println("--------------채널 조회------------");
-        Optional<Channel> foundChannel = channelService.findById(channel.getId());
-        foundChannel.ifPresent(c -> System.out.println("id = " + c.getId() + ", channel = " + c.getName()));
+        // 3-4. 메시지 수정 (내용 변경)
+        MessageUpdateRequestDto updateMsgDto = new MessageUpdateRequestDto();
+        updateMsgDto.setId(savedMsg.getId());
+        updateMsgDto.setContent("수정된 메시지!");
+        messageService.update(updateMsgDto);
+        System.out.println("메시지 수정 완료!");
 
-        System.out.println("-------------메시지 조회------------");
-        Optional<Message> foundMessage = messageService.findById(message.getId());
-        foundMessage.ifPresent(m -> System.out.println("id = " + m.getId() + ", content = " + m.getContent()));
+        // 3-5. 메시지 전체 조회
+        List<MessageResponseDto> allMsgs = messageService.findAllByChannelId(savedPubCh.getId());
+        System.out.println("[모든 메시지]");
+        allMsgs.forEach(m -> System.out.println(m.getId() + " : " + m.getContent()));
 
-        //===========================
-        // 5. 전체 갯수 출력 ( 모두 List로 형 변환 없이)
-        //===========================
-        List<User> allUsers = userService.findAll();
-        List<Channel> allChannels = (List<Channel>) channelService.findAll();
-        List<Message> allMessages = messageService.findAll();
+        // 3-6. 메시지/첨부파일 삭제 (최종 상태 점검)
+        messageService.delete(savedMsg.getId());
+        System.out.println("메시지 삭제 완료!");
+        // BinaryContentService 등도 원한다면 findAllByIdIn로 확인/삭제
 
-        System.out.println("[User] 전체 수: " + allUsers.size());
-        System.out.println("[Channel] 전체 수: " + allChannels.size());
-        System.out.println("[Message]전체 수: " + allMessages.size());
+        // 기타 ReadStatusService, UserStatusService 등 동작 확인도 위 패턴대로 테스트 가능
 
-        //=============================
-        //6. 삭제 테스트
-        //=============================
-        userService.delete(user.getId());
-        channelService.delete(channel.getId());
-        messageService.delete(message.getId());
-
-        System.out.println("[삭제 후 User] 전체 수: " + userService.findAll().size());
-        System.out.println("[삭제 후 Channel] 전체 수: " + ((List<Channel>) channelService.findAll()).size());
-        System.out.println("[삭제 후 Message] 전체 수: " + messageService.findAll().size());
-
-    }
-
-    static User setupUser(UserService userService) {
-        return userService.create("woody", "woody@codeit.com", "woody1234");
-    }
-
-    static Channel setupChannel(ChannelService channelService) {
-        return channelService.create("공지", "공지 채널입니다.");
-    }
-
-    static Message setupMessage(MessageService messageService, Channel channel, User author) {
-        return messageService.create("안녕하세요.", channel.getId(), author.getId());
+        System.exit(0); // (테스트 후, 서버 자동 종료)
     }
 }
-
-
-

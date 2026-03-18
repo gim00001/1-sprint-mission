@@ -9,11 +9,17 @@ import java.util.*;
 
 @Repository
 public class FileChannelRepository implements ChannelRepository {
-    private static final long serialVersionUID = 1L;
     private static final String FILE_PATH = "channel.db";
+    private final Map<UUID, Channel> store;
+
+    public FileChannelRepository() {
+        this.store = load();
+    }
+    // private static final long serialVersionUID = 1L;
+    // private static final String FILE_PATH = "channel.db";
 
     //Channel 데이터를 메모리에서 관리하는 맵
-    private Map<UUID, Channel> store = load();
+    // private Map<UUID, Channel> store = load();
 
     // 파일에서 데이터를 읽어오는 메서드
     @SuppressWarnings("unchecked")
@@ -34,7 +40,7 @@ public class FileChannelRepository implements ChannelRepository {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
             oos.writeObject(store);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
     }
 
@@ -57,9 +63,30 @@ public class FileChannelRepository implements ChannelRepository {
                 .findFirst();
     }
 
+
+    @Override
+    public void deleteById(UUID id) {
+        store.remove(id);
+        saveToFile();
+    }
+
     @Override
     public List<Channel> findAll() {
         return new ArrayList<>(store.values());
+    }
+
+    @Override
+    public List<Channel> findAllByIsPrivate(boolean isPrivate) {
+        List<Channel> result = new ArrayList<>();
+        for (Channel ch : store.values()) {
+            if (ch.isPrivate() == isPrivate) result.add(ch);
+        }
+        return result;
+    }
+
+    @Override
+    public List<Channel> findAllPrivateByUserId(UUID userId) {
+        return new ArrayList<>(); // 실제 구현은 서비스에서 ReadStatus와 조합
     }
 
     @Override
