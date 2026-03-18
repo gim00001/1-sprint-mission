@@ -1,6 +1,12 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.BinaryContentCreateRequestDto;
+import com.sprint.mission.discodeit.dto.MessageCreateRequestDto;
+import com.sprint.mission.discodeit.dto.MessageResponseDto;
+import com.sprint.mission.discodeit.dto.MessageUpdateRequestDto;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -8,57 +14,83 @@ import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
     private final MessageRepository messageRepository;
-    private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
+    private final UserRepository userRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public Message create(String content, UUID channelId, UUID authorId) {
-        // 메시지 유효성 검사
-        if (content == null || content.trim().isEmpty()) {
-            throw new IllegalArgumentException("메시지 내용을 입력하세요.");
+    public MessageResponseDto create(MessageCreateRequestDto dto) {
+        // 메시지 저장
+        Message message = new Message(dto.getContent(), dto.getAuthorId(), dto.getChannelId());
+        messageRepository.save(message);
+        List<UUID> attachmentIds = new ArrayList<>();
+        if (dto.getAttachments() != null) {
+            for (BinaryContentCreateRequestDto contentDto : dto.getAttachments()) {
+                BinaryContent file = new BinaryContent(contentDto.getContent(), contentDto.getContentType(), null, message.getId());
+            }
         }
-        // 연관 도메인 검증 추가
-        if (userRepository.findById(authorId).isEmpty()) {
-            throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
-        }
-        if (channelRepository.findById(channelId).isEmpty()) {
-            throw new IllegalArgumentException("존재하지 않는 채널입니다.");
-        }
-        Message message = new Message(content, authorId, channelId);
-        return messageRepository.save(message);
+        return toResponseDto(message, attachmentIds);
     }
 
     @Override
-    public Optional<Message> findById(UUID id) {
-        return messageRepository.findById(id);
+    public List<MessageResponseDto> findAllByChannelId(UUID channelId) {
+        List<Message> messages = messageRepository.findByChannelId(channelId);
+        List<MessageResponseDto> result = new ArrayList<>();
+        for (Message msg : messages) {
+            List<UUID> attachmentIds = binaryContentRepository
+                    .findAllByIdIn(List.of(msg.getId()))
+                    // 메시지ID로 첨부파일 조회(실구현에 따라 조정)
+                    .stream().map(BinaryContent::getId).toList();
+            result.add(toResponseDto(msg, attachmentIds));
+        }
+        return result;
     }
 
     @Override
-    public List<Message> findAll() {
-        return messageRepository.findAll();
+    public MessageResponseDto update(MessageUpdateRequestDto dto) {
+        Message msg = messageRepository.findById(dto.getId())
+                .orElseThrow(() -> new IllegalArgumentException("메시지 없음"));
+        msg.updateContent(dto.getContent());
+        messageRepository.save(msg);
+        List<UUID> attachmentsIds = new ArrayList<>();
+        if (dto.getAttachments() != null) {
+            // 기존 파일 삭제(옵션), 새 파일 등록
+            binaryContentRepository.findAllByIdIn(List.of(msg.getId()))
+                    .forEach(f -> binaryContentRepository.deleteById(f.getId()));
+            for (BinaryContentCreateRequestDto contentDto : dto.getAttachments()) {
+                BinaryContent file = new BinaryContent(contentDto.getContent(), contentDto.getContentType(), null, msg.getId());
+                binaryContentRepository.save(file);
+                attachmentsIds.add(file.getId());
+            }
+        }
+        return toResponseDto(msg, attachmentsIds);
     }
 
     @Override
     public void delete(UUID id) {
-        messageRepository.delete(id);
+        // 첨부파일 먼저 삭제
+        binaryContentRepository.findAllByIdIn(List.of(id)).forEach(f -> binaryContentRepository.deleteById(f.getId()));
+        messageRepository.deleteById(id);
     }
 
-    @Override
-    public List<Message> findByAuthorId(UUID authorId) {
-        return messageRepository.findByAuthorId(authorId);
-    }
-
-    @Override
-    public List<Message> findByChannelId(UUID channelId) {
-        return messageRepository.findByChannelId(channelId);
-
+    private MessageResponseDto toResponseDto(Message msg, List<UUID> attachmentIds) {
+        MessageResponseDto dto = new MessageResponseDto();
+        dto.setId(msg.getId());
+        dto.setChannelId(msg.getChannelId());
+        dto.setAuthorId(msg.getAuthorId());
+        dto.setContent(msg.getContent());
+        dto.setCreatedAt(msg.getCreatedAt());
+        dto.setUpdatedAt(msg.getUpdatedAt());
+        dto.setAttachmentIds(attachmentIds);
+        return dto;
     }
 }
+

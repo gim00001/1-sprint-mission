@@ -5,14 +5,21 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
+import java.time.Instant;
 import java.util.*;
 
 @Repository
 public class FileMessageRepository implements MessageRepository {
-    private static final long serialVersionUID = 1L;
     private static final String FILE_PATH = "message.db";
+    private final Map<UUID, Message> store;
 
-    private Map<UUID, Message> store = load();
+    public FileMessageRepository() {
+        this.store = load();
+    }
+    // private static final long serialVersionUID = 1L;
+    // private static final String FILE_PATH = "message.db";
+
+    // private Map<UUID, Message> store = load();
 
     // 파일에서 데이터를 불러오는 메서드
     @SuppressWarnings("unchecked")
@@ -80,6 +87,26 @@ public class FileMessageRepository implements MessageRepository {
             }
         }
         return result;
+    }
+
+    @Override
+    public Optional<Instant> findLatestCreatedAtByChannelId(UUID channelId) {
+        return store.values().stream()
+                .filter(m -> m.getChannelId().equals(channelId))
+                .map(Message::getCreatedAt)
+                .max(Comparator.naturalOrder());
+    }
+
+    @Override
+    public void deleteAllByChannelId(UUID channelId) {
+        store.entrySet().removeIf(entry -> entry.getValue().getChannelId().equals(channelId));
+        saveToFile();
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        store.remove(id);
+        saveToFile();
     }
 
 }
