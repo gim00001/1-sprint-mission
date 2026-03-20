@@ -42,3 +42,15 @@ out/
 fileHashes
 checksums
 *backup*
+*.h2.db
+*.db*
+*.bak*
+*.log
+.DS_Store
+/build/
+/out/
+/.idea/
+*build*
+*gradlew*
+*settings*
+
