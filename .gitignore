@@ -63,6 +63,7 @@ checksums
 *build*
 *gradlew*
 *settings*
+*.build.gradle*
 
 <<<<<<< HEAD
 >>>>>>> 152aa0e (Resolve merge confilicts)
