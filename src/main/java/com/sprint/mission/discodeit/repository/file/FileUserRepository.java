@@ -2,18 +2,32 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
-@Repository
 public class FileUserRepository implements UserRepository {
-    private static final String FILE_PATH = "user.db";
+    private final String directory;
+    private final String filePath;
     private final Map<UUID, User> store;
 
-    public FileUserRepository() {
+    public FileUserRepository(String directory) {
+        this.directory = directory;
+        this.filePath = directory + File.separator + "user.db";
         this.store = load();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<UUID, User> load() {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath))) {
+            return (Map<UUID, User>) ois.readObject();
+        } catch (FileNotFoundException | EOFException e) {
+            return new HashMap<>();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new HashMap<>();
+        }
+
     }
 
     // 저장
@@ -66,24 +80,8 @@ public class FileUserRepository implements UserRepository {
         saveToFile();
     }
 
-    // --- 파일 저장/로딩 로직 ---
-
-    @SuppressWarnings("unchecked")
-    private Map<UUID, User> load() {
-        File file = new File(FILE_PATH);
-        if (!file.exists()) {
-            return new HashMap<>();
-        }
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (Map<UUID, User>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            System.err.println("User DB 파일 로딩 실패: " + e.getMessage());
-            return new HashMap<>();
-        }
-    }
-
     private void saveToFile() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath))) {
             oos.writeObject(store);
         } catch (IOException e) {
             throw new RuntimeException("User DB 파일 저장 오류: " + e.getMessage(), e);

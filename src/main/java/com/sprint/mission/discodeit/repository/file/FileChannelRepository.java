@@ -2,42 +2,39 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
-@Repository
 public class FileChannelRepository implements ChannelRepository {
-    private static final String FILE_PATH = "channel.db";
+    private final String directory;
+    private final String filePath;
     private final Map<UUID, Channel> store;
 
-    public FileChannelRepository() {
+    // 생성자에서 디렉터리 경로를 받아옴
+    public FileChannelRepository(String directory) {
+        this.directory = directory;
+        this.filePath = directory + File.separator + "channel.db";
         this.store = load();
     }
-    // private static final long serialVersionUID = 1L;
-    // private static final String FILE_PATH = "channel.db";
-
-    //Channel 데이터를 메모리에서 관리하는 맵
-    // private Map<UUID, Channel> store = load();
 
     // 파일에서 데이터를 읽어오는 메서드
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("Unchecked")
     private Map<UUID, Channel> load() {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(FILE_PATH))) {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath))) {
             return (Map<UUID, Channel>) ois.readObject();
         } catch (FileNotFoundException | EOFException e) {
-            //  파일이 없거나 완전히 비어 있으면 빈 Map 반환
             return new HashMap<>();
         } catch (Exception e) {
             e.printStackTrace();
             return new HashMap<>();
+
         }
     }
 
     //메모리의 store를 파일로 저장하는 메서드
     private void saveToFile() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath))) {
             oos.writeObject(store);
         } catch (IOException e) {
             e.printStackTrace();
