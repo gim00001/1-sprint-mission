@@ -27,9 +27,9 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public MessageResponseDto create(MessageCreateRequestDto dto) {
+    public MessageResponseDto create(UUID channelId, MessageCreateRequestDto dto) {
         // 메시지 저장
-        Message message = new Message(dto.getContent(), dto.getAuthorId(), dto.getChannelId());
+        Message message = new Message(dto.getContent(), dto.getAuthorId(), channelId);
         messageRepository.save(message);
         List<UUID> attachmentIds = new ArrayList<>();
         if (dto.getAttachments() != null) {
@@ -55,7 +55,7 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public MessageResponseDto update(MessageUpdateRequestDto dto) {
+    public MessageResponseDto update(UUID channelId, UUID messageId, MessageUpdateRequestDto dto) {
         Message msg = messageRepository.findById(dto.getId())
                 .orElseThrow(() -> new IllegalArgumentException("메시지 없음"));
         msg.updateContent(dto.getContent());
@@ -75,7 +75,7 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public void delete(UUID id) {
+    public void delete(UUID id, UUID messageId) {
         // 첨부파일 먼저 삭제
         binaryContentRepository.findAllByIdIn(List.of(id)).forEach(f -> binaryContentRepository.deleteById(f.getId()));
         messageRepository.deleteById(id);
